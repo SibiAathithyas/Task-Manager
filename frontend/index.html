@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Task Manager</h1>
+
+<h2>Account</h2>
+<div class="input-group">
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+    <button onclick="login()">Login</button>
+</div>
+
+<hr>
+
+<h2>Create Task</h2>
+<div class="input-group">
+    <input id="title" placeholder="Title">
+    <input id="description" placeholder="Description">
+    <button onclick="createTask()">Create</button>
+</div>
+
+<hr>
+
+<h2>Your Tasks</h2>
+<button onclick="loadTasks()">Refresh</button>
+<ul id="tasks"></ul>
+
+</div>
+
+<script>
+let token = "";
+
+// SIGNUP
+async function signup() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        alert("Enter Username and Password");
+        return;
+    }
+
+    await fetch("http://127.0.0.1:8000/auth/signup", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+    });
+
+    alert("User Created");
+}
+
+// LOGIN
+async function login() {
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    const username = usernameInput.value;
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+        alert("Enter Username and Password");
+        return;
+    }
+
+    const res = await fetch("http://127.0.0.1:8000/auth/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    token = data.access_token;
+
+    usernameInput.value = "";
+    passwordInput.value = "";
+
+    document.getElementById("tasks").innerHTML = "";
+
+    alert("Logged in as " + username);
+
+    loadTasks();
+}
+
+// CREATE TASK
+async function createTask() {
+    if (!token) {
+        alert("Login First");
+        return;
+    }
+
+    const titleInput = document.getElementById("title");
+    const descInput = document.getElementById("description");
+
+    const title = titleInput.value.trim();
+    const description = descInput.value.trim();
+
+    if (!title || !description) {
+        alert("Enter Title and Description");
+        return;
+    }
+
+    await fetch(`http://127.0.0.1:8000/tasks/?token=${token}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({title, description})
+    });
+
+    titleInput.value = "";
+    descInput.value = "";
+
+    loadTasks();
+}
+
+// LOAD TASKS
+async function loadTasks() {
+    if (!token) return;
+
+    const list = document.getElementById("tasks");
+    list.innerHTML = "";
+
+    const res = await fetch(`http://127.0.0.1:8000/tasks/?token=${token}`);
+    const tasks = await res.json();
+
+    tasks.forEach(t => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            <div class="task-text">
+                ${t.title} - ${t.description}
+                <span class="${t.completed ? 'done' : 'pending'}">
+                    ${t.completed ? "Done" : "Pending"}
+                </span>
+            </div>
+            <div>
+                <button onclick="completeTask(${t.id})">Complete</button>
+                <button onclick="deleteTask(${t.id})">Delete</button>
+            </div>
+        `;
+
+        list.appendChild(li);
+    });
+}
+
+// COMPLETE
+async function completeTask(id) {
+    await fetch(`http://127.0.0.1:8000/tasks/${id}/complete?token=${token}`, {
+        method: "PUT"
+    });
+    loadTasks();
+}
+
+// DELETE
+async function deleteTask(id) {
+    await fetch(`http://127.0.0.1:8000/tasks/${id}?token=${token}`, {
+        method: "DELETE"
+    });
+    loadTasks();
+}
+</script>
+
+</body>
+</html>
