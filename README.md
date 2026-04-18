@@ -63,6 +63,8 @@ The focus of this project is on backend functionality and correctness rather tha
 
 The frontend is intentionally kept simple to demonstrate API usage clearly.
 
+The backend is hosted on Render (free tier), so the first request may take a few seconds due to cold start.
+
 ## What I Focused On:
 While building this project, I focused on:
 
