@@ -5,8 +5,9 @@ This project is a simple Task Management System built using FastAPI. The main go
 ---
 ## Live Demo
 
-Frontend: https://task-manager-chi-roan.vercel.app  
-API Docs: https://task-manager-api-tt8l.onrender.com/docs 
+- Frontend: https://task-manager-chi-roan.vercel.app
+  
+- API Docs: https://task-manager-api-tt8l.onrender.com/docs 
 ---
 
 ## Features
